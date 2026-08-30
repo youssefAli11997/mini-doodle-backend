@@ -72,22 +72,22 @@ chore: bootstrap Spring Boot application
 
 ### Tasks
 
-- [ ] **2.1** — Create `V1__init_schema.sql` with:
+- [x] **2.1** — Create `V1__init_schema.sql` with:
   - `users` table (UUID PK, name, email UNIQUE, created_at, updated_at)
   - `time_slots` table (UUID PK, user_id FK, start_time TIMESTAMPTZ, end_time TIMESTAMPTZ, status, created_at, updated_at)
   - `meetings` table (UUID PK, slot_id FK UNIQUE, title, description, created_at, updated_at)
   - `meeting_participants` table (meeting_id FK, user_id FK, composite PK)
-- [ ] **2.2** — Add `CHECK (start_time < end_time)` on `time_slots`
-- [ ] **2.3** — Add exclusion constraint on `time_slots`:
+- [x] **2.2** — Add `CHECK (start_time < end_time)` on `time_slots`
+- [x] **2.3** — Add exclusion constraint on `time_slots`:
   ```sql
   EXCLUDE USING gist (
       user_id WITH =,
       tstzrange(start_time, end_time, '[)') WITH &&
   )
   ```
-- [ ] **2.4** — Add index on `time_slots(user_id, start_time, end_time)`
-- [ ] **2.5** — Add `UNIQUE(slot_id)` on `meetings`
-- [ ] **2.6** — Write integration test that:
+- [x] **2.4** — Add index on `time_slots(user_id, start_time, end_time)`
+- [x] **2.5** — Add `UNIQUE(slot_id)` on `meetings`
+- [x] **2.6** — Write integration test that:
   - Runs the migration
   - Verifies all tables exist
   - Verifies the exclusion constraint rejects overlapping slots for the same user
@@ -97,9 +97,9 @@ chore: bootstrap Spring Boot application
 
 ### Acceptance Criteria
 
-- [ ] Flyway migration runs cleanly on `docker compose up`
-- [ ] Integration tests pass and cover all constraints listed above
-- [ ] Schema matches §23 exactly
+- [x] Flyway migration runs cleanly on `docker compose up`
+- [x] Integration tests pass and cover all constraints listed above
+- [x] Schema matches §23 exactly
 
 ### Commit
 
