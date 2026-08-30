@@ -2,6 +2,8 @@
 
 Mini Doodle is a Spring Boot backend for persistent meeting scheduling. Users create free time slots, book meetings against those slots, and query free/busy availability over a requested time range.
 
+**→ [How to consume the API](docs/consuming-the-api.md)** — step-by-step setup, curl walkthrough, HTTP file examples, and endpoint reference.
+
 ## Architecture
 
 The application is a modular monolith with package boundaries by feature:
@@ -34,11 +36,13 @@ Start PostgreSQL and the API:
 docker compose up --build
 ```
 
-The API listens on `http://localhost:8080`. If host ports are already in use, override them:
+The API listens on `http://localhost:8080`. If host ports are already in use (common when local PostgreSQL uses `5432`), override them:
 
 ```bash
 API_PORT=18080 POSTGRES_PORT=55432 docker compose up --build
 ```
+
+Or add a `.env` file with those variables and run `docker compose up --build`.
 
 Useful health and metrics endpoints:
 
@@ -46,6 +50,8 @@ Useful health and metrics endpoints:
 curl http://localhost:8080/actuator/health
 curl http://localhost:8080/actuator/prometheus
 ```
+
+See **[Consuming the API](docs/consuming-the-api.md)** for a full walkthrough, port-conflict troubleshooting, and example requests.
 
 ## Run Tests
 
@@ -55,11 +61,9 @@ curl http://localhost:8080/actuator/prometheus
 
 The test suite uses Testcontainers, so Docker must be available.
 
-## API Examples
-
-The repository includes `api-examples.http` with ready-to-run requests for VS Code REST Client, IntelliJ HTTP Client, or similar tools. Set the `@ownerId`, `@participantId`, `@slotId`, and `@meetingId` variables after creating resources.
-
 ## API
+
+Endpoint summary and request shapes. For a guided happy path, error scenarios, and copy-paste `curl` examples, use **[docs/consuming-the-api.md](docs/consuming-the-api.md)**. Ready-made requests are also in [`api-examples.http`](api-examples.http) (VS Code REST Client / IntelliJ HTTP Client).
 
 All timestamps are ISO-8601 instants, for example `2026-09-01T09:00:00Z`.
 
