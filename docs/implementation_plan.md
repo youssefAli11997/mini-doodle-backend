@@ -118,7 +118,7 @@ feat: add scheduling database schema
 
 ### Tasks
 
-- [ ] **3.1** — Define package structure:
+- [x] **3.1** — Define package structure:
   ```text
   com.example.doodle
   ├── user
@@ -137,19 +137,19 @@ feat: add scheduling database schema
       ├── domain (AvailabilityPeriod)
       └── application (AvailabilityService)
   ```
-- [ ] **3.2** — Implement `User` domain object + `UserEntity` JPA entity + `UserRepository`
+- [x] **3.2** — Implement `User` domain object + `UserEntity` JPA entity + `UserRepository`
   - Use UUID for ID (generate in app layer)
   - Use `Instant` for timestamps
   - Map `created_at` / `updated_at` with `@CreationTimestamp` / `@UpdateTimestamp` or explicit setters
-- [ ] **3.3** — Implement `TimeSlot` domain object + `TimeSlotEntity` + `TimeSlotRepository`
+- [x] **3.3** — Implement `TimeSlot` domain object + `TimeSlotEntity` + `TimeSlotRepository`
   - `SlotStatus` enum: `FREE`, `BUSY`
   - Map `TIMESTAMPTZ` ↔ `Instant`
   - Repository query: `findByUserIdAndTimeRange(userId, from, to, status)` — filter by overlap + optional status
-- [ ] **3.4** — Implement `Meeting` domain object + `MeetingEntity` + `MeetingRepository`
+- [x] **3.4** — Implement `Meeting` domain object + `MeetingEntity` + `MeetingRepository`
   - One-to-one with `TimeSlot` via `slot_id`
-- [ ] **3.5** — Implement `MeetingParticipant` domain + `MeetingParticipantEntity`
+- [x] **3.5** — Implement `MeetingParticipant` domain + `MeetingParticipantEntity`
   - Many-to-many link table with composite PK
-- [ ] **3.6** — Write integration tests for repositories:
+- [x] **3.6** — Write integration tests for repositories:
   - Save and retrieve each entity
   - Query slots by user + time range
   - Verify JPA mappings are correct
@@ -157,10 +157,10 @@ feat: add scheduling database schema
 
 ### Acceptance Criteria
 
-- [ ] All repositories have integration tests that pass
-- [ ] Domain objects are separate from JPA entities (or at minimum, the domain is not polluted by framework annotations)
-- [ ] `TimeSlotRepository` can query overlapping slots correctly
-- [ ] `UserRepository` enforces email uniqueness at the DB level
+- [x] All repositories have integration tests that pass
+- [x] Domain objects are separate from JPA entities (or at minimum, the domain is not polluted by framework annotations)
+- [x] `TimeSlotRepository` can query overlapping slots correctly
+- [x] `UserRepository` enforces email uniqueness at the DB level
 
 ### Commit
 
