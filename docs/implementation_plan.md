@@ -400,16 +400,16 @@ feat: implement availability query with aggregation
 
 ### Tasks
 
-- [ ] **5.1** — Add Micrometer counters:
+- [x] **5.1** — Add Micrometer counters:
   - `meeting_booking_success_total`
   - `meeting_booking_conflict_total`
   - `availability_query_total`
   - `http_requests_total` (provided by Spring Boot Actuator + Micrometer)
-- [ ] **5.2** — Verify `/actuator/prometheus` exposes metrics
-- [ ] **5.3** — Add global exception handler (`@ControllerAdvice`)
+- [x] **5.2** — Verify `/actuator/prometheus` exposes metrics
+- [x] **5.3** — Add global exception handler (`@ControllerAdvice`)
   - Consistent error JSON: `{ "code": "...", "message": "..." }`
   - Map domain exceptions to correct HTTP status codes per §22
-- [ ] **5.4** — Write `README.md` covering:
+- [x] **5.4** — Write `README.md` covering:
   1. What the service does
   2. Architecture overview
   3. Technology choices
@@ -419,18 +419,18 @@ feat: implement availability query with aggregation
   7. Important design decisions (exclusion constraint, SELECT FOR UPDATE, etc.)
   8. Known limitations
   9. Potential future improvements
-- [ ] **5.5** — Add example `curl` commands or an `api-examples.http` file for easy testing
-- [ ] **5.6** — Final review: ensure all §31 Definition of Done checkboxes can be ticked
-- [ ] **5.7** — Run full test suite: `mvn clean verify`
-- [ ] **5.8** — Run `docker compose up` and manually smoke-test all endpoints
+- [x] **5.5** — Add example `curl` commands or an `api-examples.http` file for easy testing
+- [x] **5.6** — Final review: ensure all §31 Definition of Done checkboxes can be ticked
+- [x] **5.7** — Run full test suite: `mvn clean verify`
+- [x] **5.8** — Run `docker compose up` and manually smoke-test all endpoints
 
 ### Acceptance Criteria
 
-- [ ] `/actuator/prometheus` returns booking metrics
-- [ ] All errors return consistent JSON structure
-- [ ] README is complete and accurate
-- [ ] Full test suite passes
-- [ ] Manual smoke test passes
+- [x] `/actuator/prometheus` returns booking metrics
+- [x] All errors return consistent JSON structure
+- [x] README is complete and accurate
+- [x] Full test suite passes
+- [x] Manual smoke test passes
 
 ### Commit(s)
 
@@ -449,29 +449,29 @@ docs: add README with setup and API examples
 
 Cross-reference with [spec.md §31](spec.md#31-definition-of-done):
 
-- [ ] **DOD.1** — Service implemented with Java and Spring Boot
-- [ ] **DOD.2** — PostgreSQL used for persistence
-- [ ] **DOD.3** — Users can be created and retrieved
-- [ ] **DOD.4** — Users can create time slots
-- [ ] **DOD.5** — Users can list time slots
-- [ ] **DOD.6** — Users can update free time slots
-- [ ] **DOD.7** — Users can delete free time slots
-- [ ] **DOD.8** — Users can book meetings
-- [ ] **DOD.9** — Meetings contain title and description
-- [ ] **DOD.10** — Meetings contain participants
-- [ ] **DOD.11** — Booked slots become `BUSY`
-- [ ] **DOD.12** — Busy slots cannot be booked again
-- [ ] **DOD.13** — Concurrent booking attempts cannot double-book a slot
-- [ ] **DOD.14** — Availability can be queried for a timeframe
-- [ ] **DOD.15** — Availability can be filtered by free/busy status
-- [ ] **DOD.16** — Adjacent availability periods are aggregated
-- [ ] **DOD.17** — Data survives application restarts
-- [ ] **DOD.18** — Automated tests cover core business rules
-- [ ] **DOD.19** — Integration tests verify PostgreSQL behavior
-- [ ] **DOD.20** — Application runs through Docker Compose
-- [ ] **DOD.21** — README documents setup and API consumption
-- [ ] **DOD.22** — Meaningful Git commits are used
-- [ ] **DOD.23** — Basic metrics are exposed
+- [x] **DOD.1** — Service implemented with Java and Spring Boot
+- [x] **DOD.2** — PostgreSQL used for persistence
+- [x] **DOD.3** — Users can be created and retrieved
+- [x] **DOD.4** — Users can create time slots
+- [x] **DOD.5** — Users can list time slots
+- [x] **DOD.6** — Users can update free time slots
+- [x] **DOD.7** — Users can delete free time slots
+- [x] **DOD.8** — Users can book meetings
+- [x] **DOD.9** — Meetings contain title and description
+- [x] **DOD.10** — Meetings contain participants
+- [x] **DOD.11** — Booked slots become `BUSY`
+- [x] **DOD.12** — Busy slots cannot be booked again
+- [x] **DOD.13** — Concurrent booking attempts cannot double-book a slot
+- [x] **DOD.14** — Availability can be queried for a timeframe
+- [x] **DOD.15** — Availability can be filtered by free/busy status
+- [x] **DOD.16** — Adjacent availability periods are aggregated
+- [x] **DOD.17** — Data survives application restarts
+- [x] **DOD.18** — Automated tests cover core business rules
+- [x] **DOD.19** — Integration tests verify PostgreSQL behavior
+- [x] **DOD.20** — Application runs through Docker Compose
+- [x] **DOD.21** — README documents setup and API consumption
+- [x] **DOD.22** — Meaningful Git commits are used
+- [x] **DOD.23** — Basic metrics are exposed
 
 ---
 

@@ -28,6 +28,12 @@ management:
       show-details: always
       probes:
         enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 logging:
   level:

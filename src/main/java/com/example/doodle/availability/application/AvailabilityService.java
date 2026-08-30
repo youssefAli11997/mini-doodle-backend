@@ -3,6 +3,7 @@ package com.example.doodle.availability.application;
 import com.example.doodle.availability.domain.AvailabilityPeriod;
 import com.example.doodle.common.exception.BadRequestException;
 import com.example.doodle.common.exception.ResourceNotFoundException;
+import com.example.doodle.observability.SchedulingMetrics;
 import com.example.doodle.slot.domain.SlotStatus;
 import com.example.doodle.slot.persistence.TimeSlotEntity;
 import com.example.doodle.slot.persistence.TimeSlotRepository;
@@ -21,10 +22,12 @@ public class AvailabilityService {
 
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
+    private final SchedulingMetrics schedulingMetrics;
 
-    public AvailabilityService(TimeSlotRepository timeSlotRepository, UserRepository userRepository) {
+    public AvailabilityService(TimeSlotRepository timeSlotRepository, UserRepository userRepository, SchedulingMetrics schedulingMetrics) {
         this.timeSlotRepository = timeSlotRepository;
         this.userRepository = userRepository;
+        this.schedulingMetrics = schedulingMetrics;
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +56,9 @@ public class AvailabilityService {
                 .sorted(Comparator.comparing(AvailabilityPeriod::startTime))
                 .toList();
 
-        return aggregatePeriods(clippedPeriods);
+        List<AvailabilityPeriod> availability = aggregatePeriods(clippedPeriods);
+        schedulingMetrics.recordAvailabilityQuery();
+        return availability;
     }
 
     private List<AvailabilityPeriod> aggregatePeriods(List<AvailabilityPeriod> periods) {

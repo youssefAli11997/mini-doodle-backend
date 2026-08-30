@@ -1,0 +1,84 @@
+@baseUrl = http://localhost:8080
+@ownerId = replace-with-owner-user-id
+@participantId = replace-with-participant-user-id
+@slotId = replace-with-slot-id
+@meetingId = replace-with-meeting-id
+
+### Health
+GET {{baseUrl}}/actuator/health
+
+### Prometheus metrics
+GET {{baseUrl}}/actuator/prometheus
+
+### Create owner
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Alice Owner",
+  "email": "alice.owner@example.com"
+}
+
+### Create participant
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Bob Participant",
+  "email": "bob.participant@example.com"
+}
+
+### Get user
+GET {{baseUrl}}/users/{{ownerId}}
+
+### Create slot
+POST {{baseUrl}}/users/{{ownerId}}/slots
+Content-Type: application/json
+
+{
+  "startTime": "2026-09-01T09:00:00Z",
+  "endTime": "2026-09-01T10:00:00Z"
+}
+
+### List slots in a timeframe
+GET {{baseUrl}}/users/{{ownerId}}/slots?from=2026-09-01T08:00:00Z&to=2026-09-01T18:00:00Z
+
+### List free slots
+GET {{baseUrl}}/users/{{ownerId}}/slots?from=2026-09-01T08:00:00Z&to=2026-09-01T18:00:00Z&status=FREE
+
+### Get slot
+GET {{baseUrl}}/users/{{ownerId}}/slots/{{slotId}}
+
+### Update slot
+PATCH {{baseUrl}}/users/{{ownerId}}/slots/{{slotId}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-09-01T09:30:00Z",
+  "endTime": "2026-09-01T10:30:00Z"
+}
+
+### Book meeting
+POST {{baseUrl}}/users/{{ownerId}}/slots/{{slotId}}/meeting
+Content-Type: application/json
+
+{
+  "title": "Architecture Discussion",
+  "description": "Discuss backend architecture",
+  "participantIds": [
+    "{{ownerId}}",
+    "{{participantId}}"
+  ]
+}
+
+### Get meeting
+GET {{baseUrl}}/users/{{ownerId}}/meetings/{{meetingId}}
+
+### Query availability
+GET {{baseUrl}}/users/{{ownerId}}/availability?from=2026-09-01T08:00:00Z&to=2026-09-01T18:00:00Z
+
+### Query busy availability
+GET {{baseUrl}}/users/{{ownerId}}/availability?from=2026-09-01T08:00:00Z&to=2026-09-01T18:00:00Z&status=BUSY
+
+### Delete free slot
+DELETE {{baseUrl}}/users/{{ownerId}}/slots/{{slotId}}

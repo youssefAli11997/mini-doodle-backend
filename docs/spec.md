@@ -1394,29 +1394,29 @@ Metrics are an explicit "plus" in the challenge.
 
 Version 1 is considered complete when:
 
-* [ ] The service is implemented with Java and Spring Boot.
-* [ ] PostgreSQL is used for persistence.
-* [ ] Users can be created and retrieved.
-* [ ] Users can create time slots.
-* [ ] Users can list time slots.
-* [ ] Users can update free time slots.
-* [ ] Users can delete free time slots.
-* [ ] Users can book meetings.
-* [ ] Meetings contain title and description.
-* [ ] Meetings contain participants.
-* [ ] Booked slots become `BUSY`.
-* [ ] Busy slots cannot be booked again.
-* [ ] Concurrent booking attempts cannot double-book a slot.
-* [ ] Availability can be queried for a timeframe.
-* [ ] Availability can be filtered by free/busy status.
-* [ ] Adjacent availability periods are aggregated.
-* [ ] Data survives application restarts.
-* [ ] Automated tests cover the core business rules.
-* [ ] Integration tests verify PostgreSQL behavior.
-* [ ] The application runs through Docker Compose.
-* [ ] README documents setup and API consumption.
-* [ ] Meaningful Git commits are used.
-* [ ] Basic metrics are exposed.
+* [x] The service is implemented with Java and Spring Boot.
+* [x] PostgreSQL is used for persistence.
+* [x] Users can be created and retrieved.
+* [x] Users can create time slots.
+* [x] Users can list time slots.
+* [x] Users can update free time slots.
+* [x] Users can delete free time slots.
+* [x] Users can book meetings.
+* [x] Meetings contain title and description.
+* [x] Meetings contain participants.
+* [x] Booked slots become `BUSY`.
+* [x] Busy slots cannot be booked again.
+* [x] Concurrent booking attempts cannot double-book a slot.
+* [x] Availability can be queried for a timeframe.
+* [x] Availability can be filtered by free/busy status.
+* [x] Adjacent availability periods are aggregated.
+* [x] Data survives application restarts.
+* [x] Automated tests cover the core business rules.
+* [x] Integration tests verify PostgreSQL behavior.
+* [x] The application runs through Docker Compose.
+* [x] README documents setup and API consumption.
+* [x] Meaningful Git commits are used.
+* [x] Basic metrics are exposed.
 
 ---
 

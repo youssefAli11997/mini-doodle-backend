@@ -2,6 +2,7 @@ package com.example.doodle.meeting.api;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,6 @@ public record BookMeetingRequest(
         String description,
 
         @NotEmpty(message = "Participant IDs list cannot be empty")
-        List<UUID> participantIds
+        List<@NotNull(message = "Participant ID cannot be null") UUID> participantIds
 ) {
 }
