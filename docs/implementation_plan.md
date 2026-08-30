@@ -32,28 +32,28 @@ These are already done. Do not re-do.
 
 ### Tasks
 
-- [ ] **1.1** — Initialize Maven project with Spring Boot starter (Web, Data JPA, Validation, Actuator, Lombok or records)
-- [ ] **1.2** — Add `docker-compose.yml` with two services:
+- [x] **1.1** — Initialize Maven project with Spring Boot starter (Web, Data JPA, Validation, Actuator, Lombok or records)
+- [x] **1.2** — Add `docker-compose.yml` with two services:
   - `postgres` (PostgreSQL 16, healthcheck)
   - `doodle-api` (Spring Boot app, depends on postgres)
-- [ ] **1.3** — Add `application.yml` / `application.properties` with:
+- [x] **1.3** — Add `application.yml` / `application.properties` with:
   - PostgreSQL connection (host, port, db, user, pass)
   - JPA/Hibernate settings (ddl-auto = validate — schema managed by Flyway)
   - Basic logging
-- [ ] **1.4** — Add Flyway dependency and create `db/migration` directory
-- [ ] **1.5** — Add Testcontainers dependency + JUnit 5 integration test setup
+- [x] **1.4** — Add Flyway dependency and create `db/migration` directory
+- [x] **1.5** — Add Testcontainers dependency + JUnit 5 integration test setup
   - Create a base integration test class that spins up PostgreSQL via Testcontainers
   - Verify the context loads and the DB is reachable
-- [ ] **1.6** — Add a simple health endpoint (`GET /actuator/health`) and verify it responds `200 OK`
-- [ ] **1.7** — Add `.gitignore`, Maven wrapper, and verify `docker compose up` works end-to-end
-- [ ] **1.8** — Add basic Micrometer/Prometheus metrics dependency (for Phase 5)
+- [x] **1.6** — Add a simple health endpoint (`GET /actuator/health`) and verify it responds `200 OK`
+- [x] **1.7** — Add `.gitignore`, Maven wrapper, and verify `docker compose up` works end-to-end
+- [x] **1.8** — Add basic Micrometer/Prometheus metrics dependency (for Phase 5)
 
 ### Acceptance Criteria
 
-- [ ] `mvn clean verify` passes (at minimum, the context-load test)
-- [ ] `docker compose up` starts both services successfully
-- [ ] `GET http://localhost:8080/actuator/health` returns `{"status":"UP"}`
-- [ ] Integration test base class is reusable for future tests
+- [x] `mvn clean verify` passes (at minimum, the context-load test)
+- [x] `docker compose up` starts both services successfully
+- [x] `GET http://localhost:8080/actuator/health` returns `{"status":"UP"}`
+- [x] Integration test base class is reusable for future tests
 
 ### Commit
 
