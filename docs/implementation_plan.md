@@ -182,18 +182,18 @@ feat: add domain model and persistence layer
 
 > **Spec references:** §18 Users  
 
-- [ ] **4.1.1** — Write acceptance test: `POST /users` creates a user and returns `201`
-- [ ] **4.1.2** — Implement `POST /users` endpoint
+- [x] **4.1.1** — Write acceptance test: `POST /users` creates a user and returns `201`
+- [x] **4.1.2** — Implement `POST /users` endpoint
   - Validate name and email are present
   - Return `201 Created` with user JSON
-- [ ] **4.1.3** — Write acceptance test: `GET /users/{userId}` returns `200` for existing user, `404` for missing user
-- [ ] **4.1.4** — Implement `GET /users/{userId}` endpoint
-- [ ] **4.1.5** — Run all tests; ensure they pass
+- [x] **4.1.3** — Write acceptance test: `GET /users/{userId}` returns `200` for existing user, `404` for missing user
+- [x] **4.1.4** — Implement `GET /users/{userId}` endpoint
+- [x] **4.1.5** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] `POST /users` with valid body returns `201` + user with UUID id
-- [ ] `POST /users` with duplicate email returns `409 Conflict` (or `400` — pick one, document it)
-- [ ] `GET /users/{id}` returns `200` for existing, `404` for non-existing
+- [x] `POST /users` with valid body returns `201` + user with UUID id
+- [x] `POST /users` with duplicate email returns `409 Conflict` (or `400` — pick one, document it)
+- [x] `GET /users/{id}` returns `200` for existing, `404` for non-existing
 
 **Commit:**
 ```text
@@ -206,23 +206,23 @@ feat: implement user CRUD endpoints
 
 > **Spec references:** §5 FR-1, §16 INV-1, INV-2  
 
-- [ ] **4.2.1** — Write acceptance test: `POST /users/{userId}/slots` creates a FREE slot
-- [ ] **4.2.2** — Implement `POST /users/{userId}/slots`
+- [x] **4.2.1** — Write acceptance test: `POST /users/{userId}/slots` creates a FREE slot
+- [x] **4.2.2** — Implement `POST /users/{userId}/slots`
   - Validate `startTime < endTime`
   - Validate user exists (404 if not)
   - Let the DB exclusion constraint catch overlaps
   - Return `201 Created` with slot JSON (status = `FREE`)
   - Return `409 Conflict` if exclusion constraint violated (overlapping slot)
   - Return `400 Bad Request` if `startTime >= endTime`
-- [ ] **4.2.3** — Write integration test: concurrent slot creation for same user with overlapping times — only one succeeds
-- [ ] **4.2.4** — Run all tests; ensure they pass
+- [x] **4.2.3** — Write integration test: concurrent slot creation for same user with overlapping times — only one succeeds
+- [x] **4.2.4** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] Valid slot → `201`, status = `FREE`
-- [ ] `startTime >= endTime` → `400`
-- [ ] Overlapping slot for same user → `409`
-- [ ] Adjacent slot for same user (`09:00-10:00` then `10:00-11:00`) → `201` (allowed)
-- [ ] Slot for non-existent user → `404`
+- [x] Valid slot → `201`, status = `FREE`
+- [x] `startTime >= endTime` → `400`
+- [x] Overlapping slot for same user → `409`
+- [x] Adjacent slot for same user (`09:00-10:00` then `10:00-11:00`) → `201` (allowed)
+- [x] Slot for non-existent user → `404`
 
 **Commit:**
 ```text
@@ -236,19 +236,19 @@ feat: implement create time slot endpoint
 > **Spec references:** §6 FR-2, §7 FR-3, §8 FR-4, §9 FR-5  
 
 #### List Slots
-- [ ] **4.3.1** — Write acceptance test: `GET /users/{userId}/slots?from=...&to=...` returns slots overlapping the range
-- [ ] **4.3.2** — Implement list endpoint with optional `from`, `to`, `status` query params
+- [x] **4.3.1** — Write acceptance test: `GET /users/{userId}/slots?from=...&to=...` returns slots overlapping the range
+- [x] **4.3.2** — Implement list endpoint with optional `from`, `to`, `status` query params
   - Use overlap semantics: `slot.start < to AND slot.end > from`
   - Clip partial overlaps in the response
-- [ ] **4.3.3** — Write test for clipping behavior (e.g., slot `09:00-11:00` queried with `10:00-12:00` returns `10:00-11:00`)
+- [x] **4.3.3** — Write test for clipping behavior (e.g., slot `09:00-11:00` queried with `10:00-12:00` returns `10:00-11:00`)
 
 #### Get Single Slot
-- [ ] **4.3.4** — Write acceptance test: `GET /users/{userId}/slots/{slotId}` returns `200` or `404`
-- [ ] **4.3.5** — Implement get single slot endpoint
+- [x] **4.3.4** — Write acceptance test: `GET /users/{userId}/slots/{slotId}` returns `200` or `404`
+- [x] **4.3.5** — Implement get single slot endpoint
 
 #### Update Slot
-- [ ] **4.3.6** — Write acceptance test: `PATCH /users/{userId}/slots/{slotId}` updates a FREE slot
-- [ ] **4.3.7** — Implement update endpoint
+- [x] **4.3.6** — Write acceptance test: `PATCH /users/{userId}/slots/{slotId}` updates a FREE slot
+- [x] **4.3.7** — Implement update endpoint
   - Slot must exist and belong to user → `404` otherwise
   - Slot must be `FREE` → `409` if `BUSY`
   - New time range must be valid → `400` otherwise
@@ -256,20 +256,20 @@ feat: implement create time slot endpoint
   - Let DB exclusion constraint enforce the overlap rule
 
 #### Delete Slot
-- [ ] **4.3.8** — Write acceptance test: `DELETE /users/{userId}/slots/{slotId}` deletes a FREE slot
-- [ ] **4.3.9** — Implement delete endpoint
+- [x] **4.3.8** — Write acceptance test: `DELETE /users/{userId}/slots/{slotId}` deletes a FREE slot
+- [x] **4.3.9** — Implement delete endpoint
   - Slot must exist and belong to user → `404` otherwise
   - Slot must be `FREE` → `409` if `BUSY`
   - Return `204 No Content`
-- [ ] **4.3.10** — Run all tests; ensure they pass
+- [x] **4.3.10** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] List returns only slots overlapping the requested timeframe
-- [ ] Partial overlaps are clipped in the response
-- [ ] Get returns `404` for wrong user or missing slot
-- [ ] Update works only on FREE slots; rejects overlaps
-- [ ] Delete works only on FREE slots
-- [ ] All edge cases covered by tests
+- [x] List returns only slots overlapping the requested timeframe
+- [x] Partial overlaps are clipped in the response
+- [x] Get returns `404` for wrong user or missing slot
+- [x] Update works only on FREE slots; rejects overlaps
+- [x] Delete works only on FREE slots
+- [x] All edge cases covered by tests
 
 **Commit:**
 ```text
@@ -283,11 +283,11 @@ feat: implement list, get, update, delete slot endpoints
 > **Spec references:** §10 FR-6, §11 FR-7, §16 INV-3 through INV-12, §24 Transactional Requirements  
 > **This is the most important slice. Take your time.**  
 
-- [ ] **4.4.1** — Write acceptance test: `POST /users/{userId}/slots/{slotId}/meeting` books a meeting
+- [x] **4.4.1** — Write acceptance test: `POST /users/{userId}/slots/{slotId}/meeting` books a meeting
   - Setup: create owner user, create 2+ participant users, create a FREE slot for owner
   - Request: title, description, participantIds (including owner + at least one other)
   - Assert: `201 Created`, slot status becomes `BUSY`, meeting exists, participants are linked
-- [ ] **4.4.2** — Implement booking service with **transactional atomicity**:
+- [x] **4.4.2** — Implement booking service with **transactional atomicity**:
   ```text
   @Transactional
   bookMeeting(slotId, ownerId, request):
@@ -304,8 +304,8 @@ feat: implement list, get, update, delete slot endpoints
       7. UPDATE slot SET status = BUSY
       8. COMMIT (implicit via @Transactional)
   ```
-- [ ] **4.4.3** — Implement `POST /users/{userId}/slots/{slotId}/meeting` controller
-- [ ] **4.4.4** — Write negative acceptance tests:
+- [x] **4.4.3** — Implement `POST /users/{userId}/slots/{slotId}/meeting` controller
+- [x] **4.4.4** — Write negative acceptance tests:
   - Booking a `BUSY` slot → `409 Conflict`
   - Booking with non-existent participant → `400 Bad Request`
   - Booking without owner in participants → `400`
@@ -313,19 +313,19 @@ feat: implement list, get, update, delete slot endpoints
   - Booking with duplicate participant IDs → `400`
   - Booking for non-existent slot → `404`
   - Booking for slot belonging to another user → `404`
-- [ ] **4.4.5** — Write **concurrency test**:
+- [x] **4.4.5** — Write **concurrency test**:
   - Create a FREE slot
   - Fire 10 concurrent booking requests for the same slot
   - Assert: exactly 1 returns `201`, exactly 9 return `409`
   - Assert: database contains exactly 1 meeting, 1 BUSY slot
-- [ ] **4.4.6** — Run all tests; ensure they pass
+- [x] **4.4.6** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] Successful booking: `201`, slot → `BUSY`, meeting + participants persisted
-- [ ] Booking a BUSY slot: `409`
-- [ ] Invalid participant rules: `400` with clear error
-- [ ] Concurrent booking: exactly 1 winner, 9 losers
-- [ ] No partial state possible (transaction rolls back on any failure)
+- [x] Successful booking: `201`, slot → `BUSY`, meeting + participants persisted
+- [x] Booking a BUSY slot: `409`
+- [x] Invalid participant rules: `400` with clear error
+- [x] Concurrent booking: exactly 1 winner, 9 losers
+- [x] No partial state possible (transaction rolls back on any failure)
 
 **Commit:**
 ```text
@@ -338,15 +338,15 @@ feat: implement meeting booking with concurrency safety
 
 > **Spec references:** §12 FR-8  
 
-- [ ] **4.5.1** — Write acceptance test: `GET /users/{userId}/meetings/{meetingId}` returns meeting details
-- [ ] **4.5.2** — Implement get meeting endpoint
+- [x] **4.5.1** — Write acceptance test: `GET /users/{userId}/meetings/{meetingId}` returns meeting details
+- [x] **4.5.2** — Implement get meeting endpoint
   - Return: meeting id, title, description, time slot (clipped? or full? — use full slot boundaries), participants list
   - Return `404` if meeting doesn't exist or doesn't belong to the user's calendar
-- [ ] **4.5.3** — Run all tests; ensure they pass
+- [x] **4.5.3** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] `200 OK` with full meeting details for valid request
-- [ ] `404` for non-existent meeting or wrong user
+- [x] `200 OK` with full meeting details for valid request
+- [x] `404` for non-existent meeting or wrong user
 
 **Commit:**
 ```text
@@ -359,31 +359,31 @@ feat: implement get meeting endpoint
 
 > **Spec references:** §13 FR-9, §14 FR-10, §15 Availability Aggregation  
 
-- [ ] **4.6.1** — Write acceptance test: `GET /users/{userId}/availability?from=...&to=...` returns aggregated periods
-- [ ] **4.6.2** — Implement availability service:
+- [x] **4.6.1** — Write acceptance test: `GET /users/{userId}/availability?from=...&to=...` returns aggregated periods
+- [x] **4.6.2** — Implement availability service:
   - Query slots from DB filtered by user + time range + optional status
   - Clip each slot to the requested timeframe
   - Sort by start time
   - Aggregate adjacent same-status periods (endTime of A == startTime of B)
   - Return list of `{startTime, endTime, status}`
-- [ ] **4.6.3** — Implement `GET /users/{userId}/availability` controller
+- [x] **4.6.3** — Implement `GET /users/{userId}/availability` controller
   - `from` and `to` are required query params
   - `status` is optional (`FREE` or `BUSY`)
-- [ ] **4.6.4** — Write tests for aggregation logic:
+- [x] **4.6.4** — Write tests for aggregation logic:
   - Adjacent FREE slots merge
   - Adjacent BUSY slots merge
   - Gaps are preserved
   - Partial overlaps are clipped
   - Filtering by status works
-- [ ] **4.6.5** — Run all tests; ensure they pass
+- [x] **4.6.5** — Run all tests; ensure they pass
 
 **Acceptance Criteria:**
-- [ ] Returns aggregated periods for the requested timeframe
-- [ ] Partial overlaps clipped correctly
-- [ ] Adjacent same-status periods merged
-- [ ] Gaps preserved
-- [ ] Optional status filter works
-- [ ] Missing `from` or `to` → `400`
+- [x] Returns aggregated periods for the requested timeframe
+- [x] Partial overlaps clipped correctly
+- [x] Adjacent same-status periods merged
+- [x] Gaps preserved
+- [x] Optional status filter works
+- [x] Missing `from` or `to` → `400`
 
 **Commit:**
 ```text
