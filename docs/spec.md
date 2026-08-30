@@ -1,6 +1,6 @@
 # Mini Doodle Backend Specification
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Draft
 **Technology:** Java / Spring Boot / PostgreSQL
 
@@ -225,7 +225,25 @@ Example:
 GET /users/{userId}/slots?from=2026-09-01T00:00:00Z&to=2026-09-02T00:00:00Z
 ```
 
-The response must only include slots relevant to the requested timeframe.
+A slot is relevant to a requested timeframe when it overlaps the requested interval.
+
+The overlap uses the interval semantics:
+
+```text
+slot.startTime < requested.to
+AND
+slot.endTime > requested.from
+```
+
+When a slot only partially overlaps the requested timeframe, the returned availability/slot representation must be clipped to the requested timeframe.
+
+For example, a requested timeframe of `10:00-12:00` and a slot of `09:00-11:00` produces:
+
+```text
+10:00-11:00
+```
+
+A slot ending exactly at `requested.from` or starting exactly at `requested.to` does not overlap the requested timeframe.
 
 ---
 
@@ -325,6 +343,14 @@ A successful operation must:
 4. Create the meeting.
 5. Associate the participants.
 6. Change the slot status to `BUSY`.
+
+Participant rules:
+
+- Every `participantId` must reference an existing user.
+- The slot owner must be included in `participantIds`.
+- The slot owner cannot be the only participant.
+- Therefore, a meeting must contain at least two participants, including the slot owner.
+- Duplicate participant IDs are not allowed.
 
 The entire operation must be atomic.
 
@@ -451,6 +477,14 @@ The API should return:
 
 This provides a more useful calendar availability representation.
 
+Aggregation rules:
+
+- Only adjacent periods can be merged.
+- Two periods are adjacent when the first period's `endTime` exactly equals the second period's `startTime`.
+- Periods must have the same status to be merged.
+- Gaps are never filled or removed.
+- The first and last returned periods are clipped to the requested timeframe when they partially overlap it.
+
 ---
 
 # 16. Domain Invariants
@@ -540,6 +574,40 @@ For concurrent requests against the same slot:
 ```text
 successful bookings <= 1
 ```
+
+---
+
+## INV-9 — Participants Must Exist
+
+Every meeting participant must reference an existing user.
+
+---
+
+## INV-10 — Slot Owner Must Participate
+
+The owner of the booked slot must be included in the meeting's participant list.
+
+```text
+slot.ownerId ∈ participantIds
+```
+
+---
+
+## INV-11 — Meeting Must Have Multiple Participants
+
+The slot owner cannot be the only participant.
+
+```text
+COUNT(participantIds) >= 2
+```
+
+Therefore every meeting has at least two distinct users, including the slot owner.
+
+---
+
+## INV-12 — Participant IDs Are Unique
+
+A meeting must not contain the same user more than once.
 
 ---
 
@@ -740,16 +808,31 @@ All scheduling state must survive service restarts.
 
 The challenge explicitly requires persistence of all data.
 
-## Users
+## 23.1 Database Model
 
 ```text
 users
------
-id
-name
-email
-created_at
-updated_at
+  │
+  ├──────────────┐
+  │              │
+  ▼              ▼
+time_slots     meeting_participants
+  │                    ▲
+  │                    │
+  ▼                    │
+meetings ───────────────┘
+```
+
+## 23.2 Users
+
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    email VARCHAR NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
 ```
 
 Constraints:
@@ -758,20 +841,18 @@ Constraints:
 * `email` unique
 * required fields non-null
 
----
+## 23.3 Time Slots
 
-## Time Slots
-
-```text
-time_slots
-----------
-id
-user_id
-start_time
-end_time
-status
-created_at
-updated_at
+```sql
+CREATE TABLE time_slots (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id),
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    status VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
 ```
 
 Constraints:
@@ -782,40 +863,69 @@ Constraints:
 * valid status
 * appropriate index on `(user_id, start_time, end_time)`
 
-The database should participate in enforcing important correctness guarantees wherever practical.
+### 23.3.1 Exclusion Constraint for Overlap Prevention
 
----
+To enforce INV-2 (no overlapping slots) at the database level, an exclusion constraint is used:
 
-## Meetings
+```sql
+ALTER TABLE time_slots
+ADD CONSTRAINT no_overlapping_slots
+EXCLUDE USING gist (
+    user_id WITH =,
+    tstzrange(start_time, end_time, '[)') WITH &&
+);
+```
+
+The `[)` (half-open) range semantics mean:
+
+* `09:00-10:00` and `10:00-11:00` are allowed (adjacent, non-overlapping).
+* `09:00-10:00` and `09:30-10:30` are rejected (overlapping).
+
+This is a **database-enforced domain invariant**, not merely application logic. It prevents the classic check-then-act race condition where two concurrent requests could both verify no overlap exists and then both insert overlapping slots.
+
+### 23.3.2 Application-Level Validation
+
+There are two layers of defense:
 
 ```text
-meetings
---------
-id
-slot_id
-title
-description
-created_at
-updated_at
+Application
+    ↓
+friendly validation / error handling
+    ↓
+Database
+    ↓
+absolute correctness guarantee
+```
+
+The application should still check for overlap and produce a useful domain exception with a clear error message. But the database remains the final authority. If two requests race, PostgreSQL still prevents the invalid state.
+
+## 23.4 Meetings
+
+```sql
+CREATE TABLE meetings (
+    id UUID PRIMARY KEY,
+    slot_id UUID NOT NULL REFERENCES time_slots(id) UNIQUE,
+    title VARCHAR NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
 ```
 
 Constraints:
 
 * `id` primary key
 * `slot_id` foreign key
-* `slot_id` unique
+* `slot_id` unique — guarantees that a slot cannot have multiple meetings
 
-The unique constraint on `slot_id` guarantees that a slot cannot have multiple meetings.
+## 23.5 Meeting Participants
 
----
-
-## Meeting Participants
-
-```text
-meeting_participants
---------------------
-meeting_id
-user_id
+```sql
+CREATE TABLE meeting_participants (
+    meeting_id UUID NOT NULL REFERENCES meetings(id),
+    user_id UUID NOT NULL REFERENCES users(id),
+    PRIMARY KEY (meeting_id, user_id)
+);
 ```
 
 Constraints:
@@ -823,6 +933,49 @@ Constraints:
 * composite primary key `(meeting_id, user_id)`
 * foreign key to `meetings`
 * foreign key to `users`
+
+## 23.6 Identifier Strategy: UUID
+
+All primary keys use **UUIDs**.
+
+Reasons:
+
+* Good API identifiers — opaque, non-sequential.
+* No information leakage through sequential IDs.
+* Easy to generate in the application layer.
+* No dependency on database-generated sequential identifiers.
+
+For a challenge of this scale, UUID performance is completely reasonable.
+
+## 23.7 Timestamp Strategy: TIMESTAMPTZ + Instant
+
+PostgreSQL uses:
+
+```sql
+TIMESTAMPTZ
+```
+
+And Java uses:
+
+```java
+Instant
+```
+
+rather than `LocalDateTime`.
+
+This is important even though timezone conversion is out of scope. We are representing **points in time**, so `Instant` is the right domain representation.
+
+For example:
+
+```text
+2026-09-01T09:00:00Z
+```
+
+rather than an ambiguous:
+
+```text
+2026-09-01 09:00
+```
 
 ---
 
@@ -852,6 +1005,88 @@ ROLLBACK
 
 The exact locking strategy is an implementation decision, but the implementation must satisfy the concurrency invariants defined above.
 
+## 24.1 Booking Concurrency Strategy
+
+To prevent double booking under concurrent load, use `SELECT ... FOR UPDATE`:
+
+```sql
+SELECT *
+FROM time_slots
+WHERE id = ?
+FOR UPDATE;
+```
+
+Inside a transaction:
+
+```text
+BEGIN TRANSACTION
+
+       │
+       ▼
+SELECT slot
+FOR UPDATE
+       │
+       ▼
+Is slot FREE?
+   │          │
+  NO         YES
+   │          │
+   ▼          ▼
+409       Validate participants
+              │
+              ▼
+        Create meeting
+              │
+              ▼
+        Create participants
+              │
+              ▼
+       UPDATE time_slot
+       SET status = BUSY
+              │
+              ▼
+           COMMIT
+```
+
+The second concurrent transaction waits for the first transaction's row lock. Once the first transaction commits, the second request:
+
+1. Acquires the lock.
+2. Reads the slot as `BUSY`.
+3. Returns `409 Conflict`.
+
+## 24.2 Defense in Depth
+
+Even with row locking, the `UNIQUE (slot_id)` constraint on `meetings` provides a final safety net. The database architecture is:
+
+```text
+Application transaction
+        +
+SELECT FOR UPDATE
+        +
+UNIQUE(slot_id)
+```
+
+The unique constraint makes it impossible for the database to contain two meetings for the same slot, regardless of application bugs.
+
+## 24.3 Participant Validation
+
+Before inserting the meeting, validate:
+
+* `participantIds.size >= 2`
+* `slot.ownerId ∈ participantIds`
+* All `participantIds` exist in `users`
+* `participantIds` are unique
+
+Existence can be validated efficiently with:
+
+```sql
+SELECT id
+FROM users
+WHERE id IN (...)
+```
+
+Then compare the returned IDs with the requested IDs. There is no need to query every participant individually.
+
 ---
 
 # 25. Query Performance
@@ -872,6 +1107,62 @@ optional status
 ```
 
 The database should perform the initial filtering.
+
+## 25.1 Availability Query
+
+The overlap condition is:
+
+```sql
+start_time < :to
+AND end_time > :from
+```
+
+For example, a requested timeframe of `10:00-12:00` and a slot of `09:00-11:00` matches because:
+
+```text
+09:00 < 12:00
+AND
+11:00 > 10:00
+```
+
+Then clip in the application layer:
+
+```text
+max(slot.start_time, requested.from)
+min(slot.end_time, requested.to)
+```
+
+producing:
+
+```text
+10:00 ─── 11:00
+```
+
+## 25.2 Aggregation Strategy
+
+Recommended approach: **database filtering + application aggregation**.
+
+PostgreSQL performs:
+
+```text
+user + time range + status
+        ↓
+only relevant slots
+```
+
+Then Java performs:
+
+```text
+sort
+ ↓
+clip
+ ↓
+aggregate adjacent same-status periods
+```
+
+Why? Because aggregation is domain behavior, not merely persistence logic. At the expected scale (hundreds of users, thousands of slots), this is trivial computationally. A complicated SQL window-function solution is unnecessary.
+
+## 25.3 Indexing
 
 Potential index:
 
@@ -935,6 +1226,34 @@ com.example.doodle
 
 The exact package structure may change during implementation if a simpler design proves more appropriate.
 
+## 26.1 Resulting Architecture
+
+```text
+                    HTTP
+                     │
+                     ▼
+              REST Controllers
+                     │
+                     ▼
+             Application Services
+              │              │
+              ▼              ▼
+           Domain        Transactions
+              │              │
+              └──────┬───────┘
+                     ▼
+                Repositories
+                     │
+                     ▼
+                PostgreSQL
+                     │
+       ┌─────────────┴─────────────┐
+       │                           │
+       ▼                           ▼
+ exclusion constraint          unique(slot_id)
+ overlapping slots             one meeting
+```
+
 ---
 
 # 27. Testing Specification
@@ -959,8 +1278,10 @@ Required cases include:
 * Deleting a busy slot.
 * Booking a free slot.
 * Booking a busy slot.
-
----
+* Booking with a non-existent participant.
+* Booking without the slot owner.
+* Booking with only the slot owner.
+* Booking with duplicate participant IDs.
 
 ## Integration Tests
 
@@ -974,8 +1295,6 @@ Integration tests should verify:
 * Availability queries.
 
 PostgreSQL should be used for integration tests rather than replacing database behavior with an in-memory approximation.
-
----
 
 ## Concurrency Test
 
@@ -1105,33 +1424,75 @@ Version 1 is considered complete when:
 
 The following decisions are intentional:
 
-### Modular monolith
+## Modular monolith
 
 The expected scale does not justify microservices.
 
-### PostgreSQL
+## PostgreSQL
 
 The domain has strong consistency requirements and relational relationships between users, slots, meetings, and participants.
 
-### Database-enforced invariants
+## UUID identifiers
+
+**Decision:** Use UUID for all primary keys.
+
+**Reason:** Good API identifiers; no information leakage through sequential IDs; easy to generate in the application; no dependency on database-generated sequential identifiers.
+
+## Timestamp representation
+
+**Decision:** PostgreSQL `TIMESTAMPTZ` + Java `Instant`.
+
+**Reason:** We are representing points in time, so `Instant` is the right domain representation. Avoids ambiguity even though timezone conversion is out of scope.
+
+## Database-enforced invariants
 
 Correctness constraints should not rely exclusively on application-level checks.
 
-### Transactional booking
+### Slot overlap prevention
+
+**Decision:** PostgreSQL exclusion constraint using `tstzrange`.
+
+**Reason:** Prevents race conditions and makes the no-overlap invariant database-enforced. The `[)` half-open range semantics allow adjacent slots (e.g., `09:00-10:00` and `10:00-11:00`) while rejecting overlapping ones.
+
+### Meeting uniqueness
+
+**Decision:** `UNIQUE(slot_id)` on `meetings`.
+
+**Reason:** Database-level defense against multiple meetings per slot, providing defense in depth alongside application-level transaction locking.
+
+## Transactional booking
 
 Creating a meeting and transitioning a slot to `BUSY` must be atomic.
 
-### No meeting cancellation
+### Booking concurrency
+
+**Decision:** Transaction + `SELECT FOR UPDATE`.
+
+**Reason:** Serializes concurrent booking attempts for the same slot and makes the state transition deterministic. The second transaction waits for the row lock, then reads the updated `BUSY` state and returns `409 Conflict`.
+
+## No meeting cancellation
 
 This simplifies the state machine and keeps the challenge focused.
 
-### No authentication
+## No authentication
 
 Authentication is outside the problem domain and would add implementation complexity without demonstrating the core scheduling design.
 
-### Calendar as domain concept
+## Calendar as domain concept
 
 Calendar exists conceptually in the domain but does not become an unnecessary CRUD resource.
+
+## Availability aggregation
+
+**Decision:** Database performs timeframe filtering; application performs clipping and aggregation.
+
+**Reason:** Aggregation is domain behavior, not merely persistence logic. At the expected scale, this is trivial computationally.
+
+## Slot listing vs availability listing
+
+**Decision:** `GET /slots` returns the actual persisted slot boundaries, while `GET /availability` returns clipped + aggregated periods.
+
+**Reason:** This keeps the resource API truthful and makes availability the derived view.
 
 ---
 
